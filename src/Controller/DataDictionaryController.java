@@ -172,4 +172,34 @@ public class DataDictionaryController {
             }
         }
     }
+
+    public List<DataDictionaryDTO> findById(Integer id) {
+        PreparedStatement stmt = null;
+        List<DataDictionaryDTO> result = new ArrayList<>();
+        Connection con = null;
+        try {
+            con = Helper.connect();
+            stmt = con.prepareStatement("select * from data_dictionary where iddata_dictionary = ?");
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                System.out.println(rs.getInt(1) + "  " + rs.getString(2) + "  " + rs.getString(3));
+                DataDictionaryDTO temp = new DataDictionaryDTO();
+                temp.setIddata_dictionary(rs.getInt(1));
+                temp.setData_key(rs.getString(2));
+                temp.setData_content(rs.getString(3));
+                result.add(temp);
+            }
+            return result;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return null;
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+    }
 }

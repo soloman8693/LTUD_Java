@@ -90,12 +90,12 @@ public class Main extends JPanel {
                 "Still does nothing");
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
-//        JComponent panel4 = makeTextPanel(
-//                "Panel #4 (has a preferred size of 410 x 50).");
-//        panel4.setPreferredSize(new Dimension(410, 50));
-//        tabbedPane.addTab("Tab 4", icon, panel4,
-//                "Does nothing at all");
-//        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
+        JComponent panel4 = makeRandomPage(
+                "Panel #4");
+        panel4.setPreferredSize(new Dimension(410, 50));
+        tabbedPane.addTab("Random Feature", icon, panel4,
+                "Does nothing at all");
+        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -302,6 +302,40 @@ public class Main extends JPanel {
         return panel;
     }
 
+
+    protected JComponent makeRandomPage(String text) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        // create empty JTextField
+        JButton btnRandomSlang = new JButton();
+        btnRandomSlang.setText("Random Slang");
+        btnRandomSlang.addActionListener(searchEvent());
+
+        JButton btnDescrip = new JButton();
+        btnDescrip.setText("Random Description");
+        btnDescrip.addActionListener(searchEvent());
+
+        jTextArea = new JEditorPane("text/html", "");
+
+        Border blackline = BorderFactory.createLineBorder(Color.black);
+        JPanel inputContainer = new JPanel(new GridLayout(1, 2));
+        inputContainer.setBorder(blackline);
+        inputContainer.add(btnRandomSlang);
+        inputContainer.add(btnDescrip);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+//        ImageIcon icon = createImageIcon("images/middle.gif");
+
+        JComponent panel1 = inputContainer;
+        tabbedPane.addTab("Tab 1", null, panel1,
+                "Does nothing");
+        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        // add textfields to frame
+        panel.add(inputContainer);
+        panel.add(jTextArea);
+        return panel;
+    }
+
 //    private static void createAndShowGUI() {
 //        //Create and set up the window.
 //        JFrame frame = new Main();
@@ -343,6 +377,35 @@ public class Main extends JPanel {
         };
     }
 
+    private ActionListener randomSlang() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String text = "";
+                List<DataDictionaryDTO> result = dataDictionaryController.search(field1.getText().equalsIgnoreCase("") ? "" : field1.getText());
+                for (DataDictionaryDTO tmp : result) {
+                    text += createResultTemplate(tmp);
+                }
+                jTextArea.setText(text);
+                if (!field1.getText().equalsIgnoreCase(""))
+                    historyController.add(field1.getText());
+            }
+        };
+    }
+
+    private ActionListener randomDescrip() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String text = "";
+                List<DataDictionaryDTO> result = dataDictionaryController.search(field1.getText().equalsIgnoreCase("") ? "" : field1.getText());
+                for (DataDictionaryDTO tmp : result) {
+                    text += createResultTemplate(tmp);
+                }
+                jTextArea.setText(text);
+                if (!field1.getText().equalsIgnoreCase(""))
+                    historyController.add(field1.getText());
+            }
+        };
+    }
     private String createResultTemplate(DataDictionaryDTO dto) {
         return "<hr>" +
                 "<h2>" + dto.getData_key() + "</h2>"

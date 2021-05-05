@@ -1,7 +1,9 @@
 package View;
 
 import Controller.DataDictionaryController;
+import Controller.HistoryController;
 import Model.DataDictionaryDTO;
+import Model.HistoryDTO;
 import Utils.ButtonColumn;
 import Utils.Helper;
 
@@ -22,6 +24,7 @@ public class Main extends JPanel {
 
     private static final long serialVersionUID = 1L;
     private static DataDictionaryController dataDictionaryController = new DataDictionaryController();
+    private static HistoryController historyController = new HistoryController();
     private static JEditorPane jTextArea;
     private static JTextField field1;
     DefaultTableModel model;
@@ -78,10 +81,10 @@ public class Main extends JPanel {
                 "Does twice as much nothing");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-//        JComponent panel3 = makeTextPanel("Panel #3");
-//        tabbedPane.addTab("Tab 3", icon, panel3,
-//                "Still does nothing");
-//        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+        JComponent panel3 = makeHistoryPage("Panel #3");
+        tabbedPane.addTab("History", icon, panel3,
+                "Still does nothing");
+        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
 //        JComponent panel4 = makeTextPanel(
 //                "Panel #4 (has a preferred size of 410 x 50).");
@@ -125,6 +128,30 @@ public class Main extends JPanel {
         // add textfields to frame
         panel.add(inputContainer);
         panel.add(jTextArea);
+        return panel;
+    }
+
+    protected JComponent makeHistoryPage(String text) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel list = new JPanel(new GridLayout(1, 2));
+        String[] columnNames = {"Input", "Date"};
+
+        model = new DefaultTableModel(columnNames, 0) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        List<HistoryDTO> result = historyController.loadAll();
+        for (HistoryDTO tmp : result) {
+            model.addRow(new Object[]{tmp.getInput(), tmp.getCreatedDate()});
+        }
+        table = new JTable(model);
+//        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        JScrollPane scrollPane = new JScrollPane(table);
+        list.add(scrollPane);
+
+        panel.add(list);
         return panel;
     }
 

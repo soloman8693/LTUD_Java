@@ -39,4 +39,28 @@ public class HistoryController {
             }
         }
     }
+
+    public Integer add(String key) {
+        List<DataDictionaryDTO> result = new ArrayList<>();
+        PreparedStatement stmt = null;
+        Connection con = null;
+        if (key.equals("")) return 0;
+        try {
+            con = Helper.connect();
+            stmt = con.prepareStatement("INSERT INTO history (input, createdDate) VALUES (?,now())");
+            stmt.setString(1, key);
+//            stmt.setString(2, descrip);
+            int rs = stmt.executeUpdate();
+            return rs;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return 0;
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+    }
 }

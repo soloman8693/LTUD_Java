@@ -16,6 +16,8 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -28,9 +30,11 @@ public class Main extends JPanel {
     private static JEditorPane jTextArea;
     private static JTextField field1;
     DefaultTableModel model;
+    JTable table;
+    DefaultTableModel model1;
+    JTable table1;
     String key;
     Integer id;
-    JTable table;
 
     public Main() {
 
@@ -93,6 +97,19 @@ public class Main extends JPanel {
 //                "Does nothing at all");
 //        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
+        tabbedPane.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                if(tabbedPane.getSelectedIndex() == 2) {
+                    model1.setRowCount(0);
+                    List<HistoryDTO> result = historyController.loadAll();
+                    for (HistoryDTO tmp : result) {
+                        model1.addRow(new Object[]{tmp.getInput(), tmp.getCreatedDate()});
+                    }
+                    table1.setModel(model1);
+                }
+            }
+        });
+
         //Add the tabbed pane to this panel.
         add(tabbedPane);
 
@@ -137,18 +154,18 @@ public class Main extends JPanel {
         JPanel list = new JPanel(new GridLayout(1, 2));
         String[] columnNames = {"Input", "Date"};
 
-        model = new DefaultTableModel(columnNames, 0) {
+        model1 = new DefaultTableModel(columnNames, 0) {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         List<HistoryDTO> result = historyController.loadAll();
         for (HistoryDTO tmp : result) {
-            model.addRow(new Object[]{tmp.getInput(), tmp.getCreatedDate()});
+            model1.addRow(new Object[]{tmp.getInput(), tmp.getCreatedDate()});
         }
-        table = new JTable(model);
+        table1 = new JTable(model1);
 //        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        JScrollPane scrollPane = new JScrollPane(table);
+        JScrollPane scrollPane = new JScrollPane(table1);
         list.add(scrollPane);
 
         panel.add(list);
@@ -320,6 +337,8 @@ public class Main extends JPanel {
                     text += createResultTemplate(tmp);
                 }
                 jTextArea.setText(text);
+                if (!field1.getText().equalsIgnoreCase(""))
+                    historyController.add(field1.getText());
             }
         };
     }

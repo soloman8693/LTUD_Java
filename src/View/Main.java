@@ -4,15 +4,8 @@ import Controller.DataDictionaryController;
 import Controller.HistoryController;
 import Model.DataDictionaryDTO;
 import Model.HistoryDTO;
-import Utils.ButtonColumn;
+import Model.QuestionSlangDTO;
 import Utils.Helper;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.sql.ResultSet;
-import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -21,6 +14,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.List;
+import java.util.Random;
 
 public class Main extends JPanel {
 
@@ -28,6 +27,9 @@ public class Main extends JPanel {
     private static DataDictionaryController dataDictionaryController = new DataDictionaryController();
     private static HistoryController historyController = new HistoryController();
     private static JEditorPane jTextArea;
+    private static JEditorPane jTextOnDay;
+    private static JEditorPane jTextRandomSlang;
+    private static JEditorPane jTextRandomDescrip;
     private static JTextField field1;
     DefaultTableModel model;
     JTable table;
@@ -106,13 +108,17 @@ public class Main extends JPanel {
 
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                if(tabbedPane.getSelectedIndex() == 2) {
+                if (tabbedPane.getSelectedIndex() == 2) {
                     model1.setRowCount(0);
                     List<HistoryDTO> result = historyController.loadAll();
                     for (HistoryDTO tmp : result) {
                         model1.addRow(new Object[]{tmp.getInput(), tmp.getCreatedDate()});
                     }
                     table1.setModel(model1);
+                }
+
+                if (tabbedPane.getSelectedIndex() == 4) {
+                    jTextOnDay.setText(getOnDay());
                 }
             }
         });
@@ -314,10 +320,10 @@ public class Main extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         JButton btnRefresh = new JButton();
-        btnRefresh.setText("Random Description");
-        btnRefresh.addActionListener(searchEvent());
+        btnRefresh.setText("Refresh");
+        btnRefresh.addActionListener(getOnDayWord());
 
-        jTextArea = new JEditorPane("text/html", "");
+        jTextOnDay = new JEditorPane("text/html", "");
 
         Border blackline = BorderFactory.createLineBorder(Color.black);
         JPanel inputContainer = new JPanel();
@@ -334,7 +340,7 @@ public class Main extends JPanel {
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         // add textfields to frame
         panel.add(inputContainer);
-        panel.add(jTextArea);
+        panel.add(jTextOnDay);
         return panel;
     }
 
@@ -344,13 +350,13 @@ public class Main extends JPanel {
         // create empty JTextField
         JButton btnRandomSlang = new JButton();
         btnRandomSlang.setText("Random Slang");
-        btnRandomSlang.addActionListener(searchEvent());
+        btnRandomSlang.addActionListener(randomSlang());
 
         JButton btnDescrip = new JButton();
         btnDescrip.setText("Random Description");
-        btnDescrip.addActionListener(searchEvent());
+        btnDescrip.addActionListener(randomDescrip());
 
-        jTextArea = new JEditorPane("text/html", "");
+        jTextRandomSlang = new JEditorPane("text/html", "");
 
         Border blackline = BorderFactory.createLineBorder(Color.black);
         JPanel inputContainer = new JPanel(new GridLayout(1, 2));
@@ -367,7 +373,7 @@ public class Main extends JPanel {
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         // add textfields to frame
         panel.add(inputContainer);
-        panel.add(jTextArea);
+        panel.add(jTextRandomSlang);
         return panel;
     }
 
@@ -412,17 +418,34 @@ public class Main extends JPanel {
         };
     }
 
+    private ActionListener getOnDayWord() {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                jTextOnDay.setText(getOnDay());
+//                if (!field1.getText().equalsIgnoreCase(""))
+//                    historyController.add(field1.getText());
+            }
+        };
+    }
+
+    private String getOnDay() {
+        Random rand = new Random();
+        String text = "";
+        Integer random = rand.nextInt(8000);
+        List<DataDictionaryDTO> result = null;
+        do {
+            result = dataDictionaryController.findById(random);
+        } while (result == null);
+        for (DataDictionaryDTO tmp : result) {
+            text += createResultTemplate(tmp);
+        }
+        return text;
+    }
+
     private ActionListener randomSlang() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String text = "";
-                List<DataDictionaryDTO> result = dataDictionaryController.search(field1.getText().equalsIgnoreCase("") ? "" : field1.getText());
-                for (DataDictionaryDTO tmp : result) {
-                    text += createResultTemplate(tmp);
-                }
-                jTextArea.setText(text);
-                if (!field1.getText().equalsIgnoreCase(""))
-                    historyController.add(field1.getText());
+                jTextRandomSlang.setText(createQuestionTemplate(buildRandomSlangQuestion(7500)));
             }
         };
     }
@@ -430,17 +453,68 @@ public class Main extends JPanel {
     private ActionListener randomDescrip() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String text = "";
-                List<DataDictionaryDTO> result = dataDictionaryController.search(field1.getText().equalsIgnoreCase("") ? "" : field1.getText());
-                for (DataDictionaryDTO tmp : result) {
-                    text += createResultTemplate(tmp);
-                }
-                jTextArea.setText(text);
-                if (!field1.getText().equalsIgnoreCase(""))
-                    historyController.add(field1.getText());
+                jTextRandomSlang.setText(createQuestionTemplate(buildRandomDescripQuestion(7500)));
             }
         };
     }
+
+    private QuestionSlangDTO buildRandomSlangQuestion(Integer range) {
+        Random random = new Random();
+        Integer rand = random.nextInt(range);
+        List<DataDictionaryDTO> question = dataDictionaryController.findById(rand);
+
+        Integer rand1 = random.nextInt(range);
+        List<DataDictionaryDTO> op1 = dataDictionaryController.findById(rand1);
+
+        Integer rand2 = random.nextInt(range);
+        List<DataDictionaryDTO> op2 = dataDictionaryController.findById(rand2);
+
+        Integer rand3 = random.nextInt(range);
+        List<DataDictionaryDTO> op3 = dataDictionaryController.findById(rand3);
+
+        QuestionSlangDTO questionSlangDTO = new QuestionSlangDTO();
+        questionSlangDTO.setSlang(question.get(0).getData_key());
+        questionSlangDTO.setA(question.get(0).getData_content());
+        questionSlangDTO.setB(op1.get(0).getData_content());
+        questionSlangDTO.setC(op2.get(0).getData_content());
+        questionSlangDTO.setD(op3.get(0).getData_content());
+
+        return questionSlangDTO;
+    }
+
+    private QuestionSlangDTO buildRandomDescripQuestion(Integer range) {
+        Random random = new Random();
+        Integer rand = random.nextInt(range);
+        List<DataDictionaryDTO> question = dataDictionaryController.findById(rand);
+
+        Integer rand1 = random.nextInt(range);
+        List<DataDictionaryDTO> op1 = dataDictionaryController.findById(rand1);
+
+        Integer rand2 = random.nextInt(range);
+        List<DataDictionaryDTO> op2 = dataDictionaryController.findById(rand2);
+
+        Integer rand3 = random.nextInt(range);
+        List<DataDictionaryDTO> op3 = dataDictionaryController.findById(rand3);
+
+        QuestionSlangDTO questionSlangDTO = new QuestionSlangDTO();
+        questionSlangDTO.setSlang(question.get(0).getData_content());
+        questionSlangDTO.setA(question.get(0).getData_key());
+        questionSlangDTO.setB(op1.get(0).getData_key());
+        questionSlangDTO.setC(op2.get(0).getData_key());
+        questionSlangDTO.setD(op3.get(0).getData_key());
+
+        return questionSlangDTO;
+    }
+
+    private String createQuestionTemplate(QuestionSlangDTO questionSlangDTO) {
+        return "What does "+ questionSlangDTO.getSlang() +" means ?" +
+                "<br><hr>" +
+                "<br> A: " + questionSlangDTO.getA() +
+                "<br> B: " + questionSlangDTO.getB() +
+                "<br> C: " + questionSlangDTO.getC() +
+                "<br> D: " + questionSlangDTO.getD();
+    }
+
     private String createResultTemplate(DataDictionaryDTO dto) {
         return "<hr>" +
                 "<h2>" + dto.getData_key() + "</h2>"

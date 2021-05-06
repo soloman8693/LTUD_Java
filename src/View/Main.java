@@ -97,6 +97,13 @@ public class Main extends JPanel {
                 "Does nothing at all");
         tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
+        JComponent panel5 = makeRandomEveryDay(
+                "Panel #5");
+        panel4.setPreferredSize(new Dimension(410, 50));
+        tabbedPane.addTab("On this day Slang Word", icon, panel5,
+                "Does nothing at all");
+        tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
+
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if(tabbedPane.getSelectedIndex() == 2) {
@@ -302,6 +309,34 @@ public class Main extends JPanel {
         return panel;
     }
 
+    protected JComponent makeRandomEveryDay(String text) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JButton btnRefresh = new JButton();
+        btnRefresh.setText("Random Description");
+        btnRefresh.addActionListener(searchEvent());
+
+        jTextArea = new JEditorPane("text/html", "");
+
+        Border blackline = BorderFactory.createLineBorder(Color.black);
+        JPanel inputContainer = new JPanel();
+        inputContainer.setLayout(new BoxLayout(inputContainer, BoxLayout.X_AXIS));
+        inputContainer.setBorder(blackline);
+        inputContainer.add(btnRefresh);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+//        ImageIcon icon = createImageIcon("images/middle.gif");
+
+        JComponent panel1 = inputContainer;
+        tabbedPane.addTab("Tab 1", null, panel1,
+                "Does nothing");
+        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        // add textfields to frame
+        panel.add(inputContainer);
+        panel.add(jTextArea);
+        return panel;
+    }
 
     protected JComponent makeRandomPage(String text) {
         JPanel panel = new JPanel();
@@ -350,7 +385,7 @@ public class Main extends JPanel {
 
     private static void createAndShowGUI() {
         //Create and set up the window.
-        JFrame frame = new JFrame("TabbedPaneDemo");
+        JFrame frame = new JFrame("Dictionary");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Add content to the window.
